@@ -30,6 +30,11 @@ const UploadForm = {
 	template: `
     <div>
         <h1>Upload Form</h1>
+        <div class="flashes">
+            <div v-for="flash in flashes" v-bind:class=flash.className>
+                {{ flash.message }}
+            </div>
+        </div>
         <form id="uploadForm" action="/api/uploads/" method="POST" enctype="multipart/form-data" @submit.prevent="uploadPhoto">
             <label for="desc">Description</label>
             <textarea id="desc" class="form-control" name="description"></textarea>
@@ -43,6 +48,7 @@ const UploadForm = {
 		uploadPhoto() {
 			let uploadForm = document.getElementById("uploadForm");
 			let form_data = new FormData(uploadForm);
+			let self = this;
 
 			fetch("/api/upload", {
 				method: "POST",
@@ -58,26 +64,42 @@ const UploadForm = {
 				.then(function (jsonResponse) {
 					// display a success message
 					console.log(jsonResponse);
+                    self.flashes=[];
+					if (Object.keys(jsonResponse).includes("errors")) {
+						jsonResponse.errors.forEach((err) => {
+							self.flashes.push({
+								message: err,
+								className: "alert alert-danger",
+							});
+						});
+					} else {
+						self.flashes.push({
+							message: "File Upload Successful",
+							className: "alert alert-success",
+						});
+					}
 				})
 				.catch(function (error) {
 					console.log(error);
 				});
 		},
 	},
-    data() {
-		return {};
-	}
+	data() {
+		return {
+			flashes: [],
+		};
+	},
 };
 
 const app = Vue.createApp({
 	data() {
 		return {};
 	},
-    components:{
-        "upload-form":UploadForm,
-        home:Home,
-        "not-found":NotFound
-    }
+	components: {
+		"upload-form": UploadForm,
+		home: Home,
+		"not-found": NotFound,
+	},
 });
 
 app.component("app-header", {
@@ -119,11 +141,9 @@ app.component("app-footer", {
 	},
 });
 
-
-
 // Define Routes
 const routes = [
-    { path: "/", component: Home },
+	{ path: "/", component: Home },
 	// Put other routes here
 	{ path: "/upload", component: UploadForm },
 	// This is a catch all route in case none of the above matches

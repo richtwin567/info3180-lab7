@@ -62,7 +62,7 @@ def upload():
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         return jsonify({"message": "File upload successful", "filename": filename, "description": desc})
     else:
-        return jsonify({"error":form_errors(upload_form)}),400
+        return jsonify({"errors":form_errors(upload_form)}),400
 ###
 # The functions below should be applicable to all Flask apps.
 ###
